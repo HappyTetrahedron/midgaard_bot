@@ -21,6 +21,8 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/jessevdk/go-flags"
 )
@@ -48,10 +50,9 @@ func main() {
 		log.Panic(err)
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			break
-		}
-	}
+	intChannel := make(chan os.Signal, 1)
+	signal.Notify(intChannel, os.Interrupt)
+	<-intChannel
+
+	log.Print("Exit")
 }
