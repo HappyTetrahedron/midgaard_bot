@@ -27,12 +27,21 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-var config struct {
+type TelegramConfig struct {
 	Token string `short:"t" long:"token" description:"Telegram API Token" required:"true"`
 }
 
+type MercConfig struct {
+	Host string `short:"h" long:"host" description:"Host and port for Merc MUD" required:"true"`
+}
+
+var Config struct {
+	Telegram TelegramConfig `group:"Telegram config"`
+	Merc MercConfig `group:"Merc MUD config"`
+}
+
 func main() {
-	_, err := flags.Parse(&config)
+	_, err := flags.Parse(&Config)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -45,7 +54,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	err = initTelegramWorkers(config.Token, ctx)
+	err = initTelegramWorkers(Config.Telegram.Token, ctx)
 	if err != nil {
 		log.Panic(err)
 	}
