@@ -20,9 +20,9 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/reiver/go-telnet"
 )
 
 type Session struct {
@@ -31,10 +31,12 @@ type Session struct {
 }
 
 var sessions map[int64]*Session
+var mercHost string
 var sessionsCtx context.Context
 
-func initSessions(ctx context.Context) error {
+func initSessions(host string, ctx context.Context) error {
 	sessions = make(map[int64]*Session)
+	mercHost = host
 	sessionsCtx = ctx
 	return nil
 }
@@ -56,19 +58,31 @@ func newSession(chat *tgbotapi.Chat) *Session {
 
 func startSession(session *Session) {
 	ctx, _ := context.WithCancel(sessionsCtx)
-	go func() {
-		for {
-			select {
-			case msg := <-session.Input:
-				log.Printf("[%s] %s", msg.From.UserName, msg.Text)
 
-				newMsg := tgbotapi.NewMessage(msg.Chat.ID, msg.Text)
-				newMsg.ReplyToMessageID = msg.MessageID
-				sendToTelegram(newMsg)
-			case <-ctx.Done():
-				return
-			}
+	go func() {
+		telnetInput, telnetOutput := make(chan string), make(chan string)
+		caller := TelnetCaller{
+			Input: telnetInput,
+			Output: telnetOutput,
 		}
+
+		go func() {
+			for {
+				select {
+				case msg := <-session.Input:
+					if msg.Text != "/start" {
+						telnetInput <- msg.Text
+					}
+				case body := <-telnetOutput:
+					newMsg := tgbotapi.NewMessage(session.Chat.ID, body)
+					sendToTelegram(newMsg)
+				case <-ctx.Done():
+					return
+				}
+			}
+		}()
+
+		telnet.DialToAndCall(mercHost, caller)
 	}()
 }
 

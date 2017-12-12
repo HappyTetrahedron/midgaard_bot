@@ -49,7 +49,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = initSessions(ctx)
+	err = initSessions(Config.Merc.Host, ctx)
 	if err != nil {
 		log.Panic(err)
 	}
