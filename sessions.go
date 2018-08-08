@@ -20,6 +20,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/reiver/go-telnet"
@@ -71,7 +72,7 @@ func startSession(session *Session) {
 				select {
 				case msg := <-session.Input:
 					if msg.Text != "/start" {
-						telnetInput <- msg.Text
+						telnetInput <- strings.Trim(msg.Text, "/")
 					}
 				case body := <-telnetOutput:
 					newMsg := tgbotapi.NewMessage(session.Chat.ID, body)

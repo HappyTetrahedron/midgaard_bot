@@ -43,7 +43,7 @@ func initTelegramWorkers(token string, ctx context.Context) error {
 
 	return nil
 }
-	
+
 func recvWorker(bot *tgbotapi.BotAPI, ctx context.Context) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
