@@ -53,8 +53,10 @@ func recvWorker(bot *tgbotapi.BotAPI, ctx context.Context) {
 	for {
 		select {
 		case update := <-updates:
-			session := getSession(update.Message.Chat)
-			sendToSession(session, update.Message)
+		if update.Message != nil {
+				session := getSession(update.Message.Chat)
+				sendToSession(session, update.Message)
+			}
 		case <-ctx.Done():
 			return
 		}
