@@ -29,6 +29,7 @@ import (
 type TelnetCaller struct {
 	Input chan string
 	Output chan string
+	Error chan string
 }
 
 func (caller TelnetCaller) CallTELNET(ctx telnet.Context, writer telnet.Writer, reader telnet.Reader) {
@@ -55,7 +56,7 @@ func (caller TelnetCaller) CallTELNET(ctx telnet.Context, writer telnet.Writer, 
 	// Receive text from MUD
 	chunks := make(chan string)
 	chunk := ""
-	
+
 	go func() {
 		var buffer [1]byte
 		p := buffer[:]
@@ -64,7 +65,10 @@ func (caller TelnetCaller) CallTELNET(ctx telnet.Context, writer telnet.Writer, 
 			n, err := reader.Read(p)
 			if n <= 0 && err == nil {
 				continue
-			} else if n <= 0 && err != nil {
+			} else if err != nil {
+				caller.Error <- err.Error()
+				return
+			} else if n <= 0 {
 				break
 			}
 

@@ -58,13 +58,14 @@ func newSession(chat *tgbotapi.Chat) *Session {
 }
 
 func startSession(session *Session) {
-	ctx, _ := context.WithCancel(sessionsCtx)
+	ctx, cancel := context.WithCancel(sessionsCtx)
 
 	go func() {
-		telnetInput, telnetOutput := make(chan string), make(chan string)
+		telnetInput, telnetOutput, telnetError := make(chan string), make(chan string), make(chan string)
 		caller := TelnetCaller{
 			Input: telnetInput,
 			Output: telnetOutput,
+			Error: telnetError,
 		}
 
 		go func() {
@@ -77,6 +78,10 @@ func startSession(session *Session) {
 				case body := <-telnetOutput:
 					newMsg := tgbotapi.NewMessage(session.Chat.ID, body)
 					sendToTelegram(newMsg)
+					case <-telnetError:
+					cancel()
+					delete(sessions, session.Chat.ID)
+					return
 				case <-ctx.Done():
 					return
 				}
