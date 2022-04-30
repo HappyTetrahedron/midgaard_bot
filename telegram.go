@@ -48,7 +48,7 @@ func recvWorker(bot *tgbotapi.BotAPI, ctx context.Context) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, _ := bot.GetUpdatesChan(u)
+	updates := bot.GetUpdatesChan(u)
 
 	for {
 		select {
