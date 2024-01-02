@@ -22,12 +22,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/reiver/go-telnet"
 )
 
 type Session struct {
-	Chat *tgbotapi.Chat
+	Chat  *tgbotapi.Chat
 	Input chan *tgbotapi.Message
 }
 
@@ -63,9 +63,9 @@ func startSession(session *Session) {
 	go func() {
 		telnetInput, telnetOutput, telnetError := make(chan string), make(chan string), make(chan string)
 		caller := TelnetCaller{
-			Input: telnetInput,
+			Input:  telnetInput,
 			Output: telnetOutput,
-			Error: telnetError,
+			Error:  telnetError,
 		}
 
 		go func() {
@@ -76,9 +76,8 @@ func startSession(session *Session) {
 						telnetInput <- strings.Trim(msg.Text, "/")
 					}
 				case body := <-telnetOutput:
-					newMsg := tgbotapi.NewMessage(session.Chat.ID, body)
-					sendToTelegram(newMsg)
-					case <-telnetError:
+					sendToTelegram(session.Chat.ID, body)
+				case <-telnetError:
 					cancel()
 					delete(sessions, session.Chat.ID)
 					return

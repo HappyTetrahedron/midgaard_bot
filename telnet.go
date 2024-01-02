@@ -27,9 +27,9 @@ import (
 )
 
 type TelnetCaller struct {
-	Input chan string
+	Input  chan string
 	Output chan string
-	Error chan string
+	Error  chan string
 }
 
 func (caller TelnetCaller) CallTELNET(ctx telnet.Context, writer telnet.Writer, reader telnet.Reader) {

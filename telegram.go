@@ -20,9 +20,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 var sendChannel chan tgbotapi.Chattable
@@ -33,7 +34,7 @@ func initTelegramWorkers(token string, ctx context.Context) error {
 		return err
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -53,7 +54,7 @@ func recvWorker(bot *tgbotapi.BotAPI, ctx context.Context) {
 	for {
 		select {
 		case update := <-updates:
-		if update.Message != nil && update.Message.Text != "" {
+			if update.Message != nil && update.Message.Text != "" {
 				session := getSession(update.Message.Chat)
 				sendToSession(session, update.Message)
 			}
@@ -74,6 +75,12 @@ func sendWorker(bot *tgbotapi.BotAPI, sendChannel chan tgbotapi.Chattable, ctx c
 	}
 }
 
-func sendToTelegram(message tgbotapi.Chattable) {
-	sendChannel <- message
+func sendToTelegram(chat_id int64, body string) {
+	newMsg := tgbotapi.NewMessage(chat_id, formatStringForSending(body))
+	newMsg.ParseMode = tgbotapi.ModeMarkdownV2
+	sendChannel <- newMsg
+}
+
+func formatStringForSending(raw string) string {
+	return fmt.Sprintf("```\n%s\n```", raw)
 }

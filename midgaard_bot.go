@@ -37,7 +37,7 @@ type MercConfig struct {
 
 var Config struct {
 	Telegram TelegramConfig `group:"Telegram config"`
-	Merc MercConfig `group:"Merc MUD config"`
+	Merc     MercConfig     `group:"Merc MUD config"`
 }
 
 func main() {
