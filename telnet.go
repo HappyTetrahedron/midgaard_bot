@@ -20,11 +20,18 @@ package main
 
 import (
 	"bytes"
+	"regexp"
 	"time"
 
 	"github.com/reiver/go-oi"
 	"github.com/reiver/go-telnet"
 )
+
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
+func StripANSI(s string) string {
+	return ansiRegex.ReplaceAllString(s, "")
+}
 
 type TelnetCaller struct {
 	Input  chan string
@@ -85,7 +92,7 @@ func (caller TelnetCaller) CallTELNET(ctx telnet.Context, writer telnet.Writer, 
 				case input := <-chunks:
 					chunk = chunk + input
 				case <-time.After(time.Millisecond * 500):
-					caller.Output <- chunk
+					caller.Output <- StripANSI(chunk)
 					chunk = ""
 				}
 			}
